@@ -1,5 +1,3 @@
-RUN pip uninstall telegram -y && pip install python-telegram-bot==20.3
-
 # Use the official Python image as a base
 FROM python:3.9-slim
 
@@ -9,11 +7,12 @@ WORKDIR /app
 # Copy the application code into the container
 COPY . /app
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Uninstall conflicting libraries and install required dependencies
+RUN pip uninstall telegram -y && pip install python-telegram-bot==20.3 \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Expose port (not strictly necessary for Telegram bots)
+# Expose port (if necessary, though Telegram bot doesn't use it)
 EXPOSE 8000
 
 # Run the bot
-CMD ["python", "main.py"]
+CMD ["python", "bot.py"]
