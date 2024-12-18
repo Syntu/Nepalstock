@@ -83,4 +83,6 @@ application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_stock_symbol))
 
 # Start polling to handle updates from Telegram
-if __
+if __name__ == "__main__":
+    # Start the application and listen for updates
+    application.run_polling()
