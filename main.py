@@ -59,7 +59,7 @@ def fetch_stock_data_by_symbol(symbol):
 # Command handler: /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Welcome to Syntu's NEPSE💹BOT!n\कृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: SHINE, SHPC, SWBBL, etc."
+        "Welcome to Syntu's NEPSE💹BOT!\nकृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: SHINE, SHPC, SWBBL, etc."
     )
 
 # Message handler for stock symbols
@@ -78,7 +78,7 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
             f"Turnover: {data['Turnover']}"
         )
     else:
-        response = f"Symbol '{symbol}' ल्या फेला परेन हौं 🤗🤗n\Symbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस है 🙏।"
+        response = f"Symbol '{symbol}' ल्या फेला परेन हौं 🤗🤗\nSymbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस है 🙏।"
 
     await update.message.reply_text(response, parse_mode=ParseMode.HTML)
 
@@ -95,11 +95,13 @@ def webhook():
     return "OK", 200
 
 # Set webhook on Flask startup
-@app.before_first_request
 def set_webhook():
     # Set the webhook to the Telegram API
     webhook_url = f"{APP_URL}/{TOKEN}"
     application.bot.set_webhook(webhook_url)
+
+# Call set_webhook at app startup
+set_webhook()
 
 # Run Flask app
 if __name__ == "__main__":
