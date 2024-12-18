@@ -1,3 +1,5 @@
+RUN pip uninstall telegram -y && pip install python-telegram-bot==20.3
+
 # Use the official Python image as a base
 FROM python:3.9-slim
 
