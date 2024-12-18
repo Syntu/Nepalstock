@@ -1,7 +1,6 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, request
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode
@@ -10,12 +9,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Flask app for webhook
-app = Flask(__name__)
-
 # Environment variables
 TOKEN = os.getenv("TELEGRAM_API_KEY")
-APP_URL = os.getenv("APP_URL")
 
 # Function to fetch stock data from Nepal Stock
 def fetch_stock_data_by_symbol(symbol):
@@ -82,32 +77,10 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     await update.message.reply_text(response, parse_mode=ParseMode.HTML)
 
-# Telegram bot application setup
+# Telegram bot application setup using polling
 application = ApplicationBuilder().token(TOKEN).build()
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_stock_symbol))
 
-# Flask route for Telegram Webhook
-@app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-    update = Update.de_json(request.get_json(force=True), application.bot)
-    application.update_queue.put(update)
-    return "OK", 200
-
-# Set webhook on Flask startup
-@app.before_first_request
-def set_webhook():
-    # Set the webhook to the Telegram API
-    webhook_url = f"{APP_URL}/{TOKEN}"
-    application.bot.set_webhook(webhook_url)
-
-# Root route to handle GET requests (you can test the app is running)
-@app.route("/", methods=["GET"])
-def index():
-    return "NEPSE BOT is running!", 200
-
-# Run Flask app and set webhook
-if __name__ == "__main__":
-    # Run Flask app
-    port = int(os.getenv("PORT", 5000))  # Default port is 5000 if not set
-    app.run(host="0.0.0.0", port=port)
+# Start polling to handle updates from Telegram
+if __
