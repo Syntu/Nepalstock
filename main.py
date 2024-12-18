@@ -94,17 +94,17 @@ def webhook():
     application.update_queue.put(update)
     return "OK", 200
 
-# Root route to handle GET requests
-@app.route("/", methods=["GET"])
-def index():
-    return "NEPSE BOT is running!", 200
-
-# Set webhook on Flask startup
-@app.before_first_request
+# Set webhook on Flask startup using `before_request`
+@app.before_request
 def set_webhook():
     # Set the webhook to the Telegram API
     webhook_url = f"{APP_URL}/{TOKEN}"
     application.bot.set_webhook(webhook_url)
+
+# Root route to handle GET requests
+@app.route("/", methods=["GET"])
+def index():
+    return "NEPSE BOT is running!", 200
 
 # Run Flask app and set webhook
 if __name__ == "__main__":
