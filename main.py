@@ -95,13 +95,11 @@ def webhook():
     return "OK", 200
 
 # Set webhook on Flask startup
+@app.before_first_request
 def set_webhook():
     # Set the webhook to the Telegram API
     webhook_url = f"{APP_URL}/{TOKEN}"
     application.bot.set_webhook(webhook_url)
-
-# Call set_webhook at app startup
-set_webhook()
 
 # Run Flask app
 if __name__ == "__main__":
