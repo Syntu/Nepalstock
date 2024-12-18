@@ -7,7 +7,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 from telegram.constants import ParseMode
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 
 # Flask app for webhook
@@ -17,7 +17,7 @@ app = Flask(__name__)
 TOKEN = os.getenv("TELEGRAM_API_KEY")
 APP_URL = os.getenv("APP_URL")
 
-# Function to fetch stock data
+# Function to fetch stock data from Nepal Stock
 def fetch_stock_data_by_symbol(symbol):
     url = "https://www.nepalstock.com/today-price"
     response = requests.get(url)
@@ -59,7 +59,7 @@ def fetch_stock_data_by_symbol(symbol):
 # Command handler: /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Welcome to Syntu'd NEPSE BOT! कृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: NABIL, SHPC, etc."
+        "Welcome to Syntu's NEPSE💹BOT!n\कृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: SHINE, SHPC, SWBBL, etc."
     )
 
 # Message handler for stock symbols
@@ -78,7 +78,7 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
             f"Turnover: {data['Turnover']}"
         )
     else:
-        response = f"Symbol '{symbol}' ल्या फेला परेन त हौ 🤗🤗।\n Symbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस"
+        response = f"Symbol '{symbol}' ल्या फेला परेन हौं 🤗🤗n\Symbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस है 🙏।"
 
     await update.message.reply_text(response, parse_mode=ParseMode.HTML)
 
@@ -97,8 +97,11 @@ def webhook():
 # Set webhook on Flask startup
 @app.before_first_request
 def set_webhook():
-    application.bot.set_webhook(f"{APP_URL}/{TOKEN}")
+    # Set the webhook to the Telegram API
+    webhook_url = f"{APP_URL}/{TOKEN}"
+    application.bot.set_webhook(webhook_url)
 
 # Run Flask app
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
+    port = int(os.getenv("PORT", 5000))  # Default port is 5000 if not set
+    app.run(host="0.0.0.0", port=port)
