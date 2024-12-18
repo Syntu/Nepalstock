@@ -6,16 +6,17 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode
 from dotenv import load_dotenv
+import threading
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Flask app for webhook
-app = Flask(__name__)
-
 # Environment variables
 TOKEN = os.getenv("TELEGRAM_API_KEY")
 APP_URL = os.getenv("APP_URL")
+
+# Flask app
+app = Flask(__name__)
 
 # Function to fetch stock data from Nepal Stock
 def fetch_stock_data_by_symbol(symbol):
@@ -33,7 +34,7 @@ def fetch_stock_data_by_symbol(symbol):
     rows = table.find_all('tr')[1:]
     for row in rows:
         cols = row.find_all('td')
-        if len(cols) < 10:  # Ensure the row has enough columns
+        if len(cols) < 10:
             continue
 
         row_symbol = cols[1].text.strip()
@@ -94,20 +95,21 @@ def webhook():
     application.update_queue.put(update)
     return "OK", 200
 
-# Set webhook on Flask startup using `before_request`
-@app.before_request
+# Root route to test if Flask is running
+@app.route("/", methods=["GET"])
+def home():
+    return "NEPSE BOT is Alive and Running!", 200
+
+# Set webhook on startup
+@app.before_first_request
 def set_webhook():
-    # Set the webhook to the Telegram API
     webhook_url = f"{APP_URL}/{TOKEN}"
     application.bot.set_webhook(webhook_url)
 
-# Root route to handle GET requests
-@app.route("/", methods=["GET"])
-def index():
-    return "NEPSE BOT is running!", 200
+# Function to keep the Replit app alive
+def keep_alive():
+    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=8080)).start()
 
-# Run Flask app and set webhook
+# Main function to run the bot
 if __name__ == "__main__":
-    # Run Flask app
-    port = int(os.getenv("PORT", 5000))  # Default port is 5000 if not set
-    app.run(host="0.0.0.0", port=port)
+    keep_alive()
