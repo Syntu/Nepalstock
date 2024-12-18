@@ -4,12 +4,8 @@ from bs4 import BeautifulSoup
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Environment variables
+# Environment variables (set these in Koyeb's dashboard)
 TOKEN = os.getenv("TELEGRAM_API_KEY")
 
 # Function to fetch stock data from Nepal Stock
@@ -54,7 +50,7 @@ def fetch_stock_data_by_symbol(symbol):
 # Command handler: /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Welcome to Syntu's NEPSE💹BOT!\nकृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: SHINE, SHPC, SWBBL, etc."
+        "Welcome to NEPSE📊BOT!\nकृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: SHINE, SHPC, SWBBL, etc."
     )
 
 # Message handler for stock symbols
@@ -73,7 +69,7 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
             f"Turnover: {data['Turnover']}"
         )
     else:
-        response = f"Symbol '{symbol}' ल्या फेला परेन हौं 🤗🤗\nSymbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस है 🙏।"
+        response = f"Symbol '{symbol}' फेला परेन। कृपया सही सिम्बोल दिनुहोस्।"
 
     await update.message.reply_text(response, parse_mode=ParseMode.HTML)
 
