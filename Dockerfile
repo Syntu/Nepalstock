@@ -15,4 +15,4 @@ RUN apt-get update && apt-get install -y python3-pip \
 EXPOSE 8000
 
 # Run the bot
-CMD ["python", "bot.py"]
+CMD ["python", "main.py"]
