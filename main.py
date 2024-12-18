@@ -94,6 +94,11 @@ def webhook():
     application.update_queue.put(update)
     return "OK", 200
 
+# Root route to handle GET requests
+@app.route("/", methods=["GET"])
+def index():
+    return "NEPSE BOT is running!", 200
+
 # Run Flask app and set webhook
 if __name__ == "__main__":
     # Set webhook
