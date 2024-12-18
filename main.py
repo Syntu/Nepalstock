@@ -1,24 +1,23 @@
 import os
+import requests
+from bs4 import BeautifulSoup
 from flask import Flask, request
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode
-from bs4 import BeautifulSoup
-import requests
 from dotenv import load_dotenv
 
-# Environment variables load
+# Load environment variables from .env file
 load_dotenv()
+
+# Flask app for webhook
+app = Flask(__name__)
+
+# Environment variables
 TOKEN = os.getenv("TELEGRAM_API_KEY")
 APP_URL = os.getenv("APP_URL")
 
-# Flask app
-app = Flask(__name__)
-
-# Telegram bot application
-application = ApplicationBuilder().token(TOKEN).build()
-
-# Function to fetch stock data
+# Function to fetch stock data from Nepal Stock
 def fetch_stock_data_by_symbol(symbol):
     url = "https://www.nepalstock.com/today-price"
     response = requests.get(url)
@@ -34,23 +33,30 @@ def fetch_stock_data_by_symbol(symbol):
     rows = table.find_all('tr')[1:]
     for row in rows:
         cols = row.find_all('td')
-        if len(cols) < 10:
+        if len(cols) < 10:  # Ensure the row has enough columns
             continue
 
         row_symbol = cols[1].text.strip()
         if row_symbol.upper() == symbol.upper():
+            day_high = cols[4].text.strip()
+            day_low = cols[5].text.strip()
+            closing_price = cols[9].text.strip()
+            previous_closing = cols[10].text.strip()
+            volume = cols[6].text.strip()
+            turnover = cols[7].text.strip()
+
             return {
                 'Symbol': symbol,
-                'Day High': cols[4].text.strip(),
-                'Day Low': cols[5].text.strip(),
-                'LTP': cols[9].text.strip(),
-                'Previous Closing': cols[10].text.strip(),
-                'Volume': cols[6].text.strip(),
-                'Turnover': cols[7].text.strip(),
+                'Day High': day_high,
+                'Day Low': day_low,
+                'LTP': closing_price,
+                'Previous Closing': previous_closing,
+                'Volume': volume,
+                'Turnover': turnover,
             }
     return None
 
-# Command handler for /start
+# Command handler: /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Welcome to Syntu's NEPSE💹BOT!\nकृपया स्टकको सिम्बोल दिनुहोस्।\nउदाहरण: SHINE, SHPC, SWBBL, etc."
@@ -72,30 +78,32 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
             f"Turnover: {data['Turnover']}"
         )
     else:
-        response = f"Symbol '{symbol}'ल्या फेला परेन त हौ 😅😅।\n Symbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस है 🤗🙏।"
+        response = f"Symbol '{symbol}' ल्या फेला परेन हौं 🤗🤗\nSymbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस है 🙏।"
 
     await update.message.reply_text(response, parse_mode=ParseMode.HTML)
 
-# Adding handlers
+# Telegram bot application setup
+application = ApplicationBuilder().token(TOKEN).build()
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_stock_symbol))
 
 # Flask route for Telegram Webhook
-@app.route(f"/{TOKEN}", methods=["POST"])
+@app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
-    json_data = request.get_json(force=True)
-    update = Update.de_json(json_data, application.bot)
+    update = Update.de_json(request.get_json(force=True), application.bot)
     application.update_queue.put(update)
     return "OK", 200
 
-# Webhook setup
+# Set webhook on Flask startup
 def set_webhook():
+    # Set the webhook to the Telegram API
     webhook_url = f"{APP_URL}/{TOKEN}"
-    application.bot.set_webhook(url=webhook_url)
-    print(f"Webhook set to: {webhook_url}")
+    application.bot.set_webhook(webhook_url)
 
-# Flask app run
+# Call set_webhook at app startup
+set_webhook()
+
+# Run Flask app
 if __name__ == "__main__":
-    set_webhook()
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 5000))  # Default port is 5000 if not set
     app.run(host="0.0.0.0", port=port)
