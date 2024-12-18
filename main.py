@@ -94,14 +94,12 @@ def webhook():
     application.update_queue.put(update)
     return "OK", 200
 
-# Set webhook on Flask startup
-@app.before_first_request
-def set_webhook():
-    # Set the webhook to the Telegram API
+# Run Flask app and set webhook
+if __name__ == "__main__":
+    # Set webhook
     webhook_url = f"{APP_URL}/{TOKEN}"
     application.bot.set_webhook(webhook_url)
 
-# Run Flask app
-if __name__ == "__main__":
+    # Run Flask app
     port = int(os.getenv("PORT", 5000))  # Default port is 5000 if not set
     app.run(host="0.0.0.0", port=port)
