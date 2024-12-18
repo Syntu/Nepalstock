@@ -15,4 +15,4 @@ RUN pip uninstall telegram -y && pip install python-telegram-bot==20.3 \
 EXPOSE 8000
 
 # Run the bot
-CMD ["python", "bot.py"]
+CMD ["python", "main.py"]
