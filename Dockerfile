@@ -1,16 +1,17 @@
-# Use the official Python image as a base
+# Use official Python 3.9 slim image
 FROM python:3.9-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the application code into the container
+# Copy the application files into the container
 COPY . /app
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y python3-pip \
+    && pip3 install --no-cache-dir -r requirements.txt
 
-# Expose port (for web service)
+# Expose the port (even though your bot may not need this, just in case)
 EXPOSE 8000
 
 # Run the bot
