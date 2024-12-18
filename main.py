@@ -78,8 +78,7 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
             f"Turnover: {data['Turnover']}"
         )
     else:
-        response = f"Symbol '{symbol}' ल्या फेला परेन त हौ 🤗🤗।
-        Symbol राम्रो सङ्ग हानेर फेरि Try गर्नुस
+        response = f"Symbol '{symbol}' ल्या फेला परेन त हौ 🤗🤗।\n Symbol राम्रो सङ्ग हेरेर फेरि Try गर्नुस"
 
     await update.message.reply_text(response, parse_mode=ParseMode.HTML)
 
