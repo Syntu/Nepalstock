@@ -5,20 +5,26 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode
 
-# Environment variables (set these in Koyeb's dashboard)
+# Environment variables (set these in Render's dashboard)
 TOKEN = os.getenv("TELEGRAM_API_KEY")
 
 # Function to fetch stock data from Nepal Stock
 def fetch_stock_data_by_symbol(symbol):
     url = "https://www.nepalstock.com/today-price"
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=10)
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+        return None
 
     if response.status_code != 200:
+        print(f"Failed to fetch data: {response.status_code}")
         return None
 
     soup = BeautifulSoup(response.text, 'html.parser')
     table = soup.find('table', {'class': 'table'})
     if not table:
+        print("Table not found")
         return None
 
     rows = table.find_all('tr')[1:]
@@ -45,6 +51,8 @@ def fetch_stock_data_by_symbol(symbol):
                 'Volume': volume,
                 'Turnover': turnover,
             }
+
+    print(f"Symbol '{symbol}' not found in the table")
     return None
 
 # Command handler: /start
@@ -56,6 +64,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Message handler for stock symbols
 async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE):
     symbol = update.message.text.strip().upper()
+    print(f"Searching for stock symbol: {symbol}")
     data = fetch_stock_data_by_symbol(symbol)
 
     if data:
