@@ -5,6 +5,10 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from telegram.constants import ParseMode
 import logging
+import urllib3
+
+# Disable SSL warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Enable logging
 logging.basicConfig(level=logging.DEBUG)
@@ -26,20 +30,20 @@ def fetch_stock_data_by_symbol(symbol):
         return None
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    table = soup.find('table', {'class': 'table'})
+    table = soup.find('table', {'class': 'table'})  # सही class नाम जाँच गर्नुहोस्
     if not table:
         logging.error("Error: No table found in the response.")
         return None
 
-    rows = table.find_all('tr')[1:]
+    rows = table.find_all('tr')[1:]  # Header हटाउन [1:] प्रयोग
     for row in rows:
         cols = row.find_all('td')
-        if len(cols) < 10:
+        if len(cols) < 7:  # सुनिश्चित गर्नुहोस् कि स्तम्भ संख्या पर्याप्त छ
             continue
 
         row_symbol = cols[1].text.strip()
         if row_symbol.upper() == symbol.upper():
-            ltp = cols[6].text.strip()
+            ltp = cols[6].text.strip()  # सही स्तम्भ जाँच गर्नुहोस्
             return {'Symbol': symbol, 'LTP': ltp}
 
     logging.info(f"Symbol '{symbol}' not found.")
