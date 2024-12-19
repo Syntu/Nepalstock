@@ -11,31 +11,36 @@ TOKEN = os.getenv("TELEGRAM_API_KEY")
 # Function to fetch stock data from Nepal Stock
 def fetch_stock_data_by_symbol(symbol):
     url = "https://www.nepalstock.com/today-price"
-    response = requests.get(url)
-    
+    try:
+        response = requests.get(url, timeout=10, verify=False)
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+        return None
+
     if response.status_code != 200:
-        print("Error: Unable to fetch data from Sharesansar. Status code:", response.status_code)
+        print("Error: Unable to fetch data from Nepal Stock. Status code:", response.status_code)
         return None
 
     soup = BeautifulSoup(response.text, 'html.parser')
-
-    table = soup.find('table')
+    table = soup.find('table', {'class': 'table'})
     if not table:
         print("Error: No table found in the response.")
         return None
-    
+
     rows = table.find_all('tr')[1:]
 
     for row in rows:
         cols = row.find_all('td')
+        if len(cols) < 10:  # Ensure there are enough columns in the row
+            continue
+
         row_symbol = cols[1].text.strip()
 
         if row_symbol.upper() == symbol.upper():
-            day_high = cols[4].text.strip()
-
+            ltp = cols[9].text.strip()  # LTP column
             return {
                 'Symbol': symbol,
-                'Day High': day_high,
+                'LTP': ltp,
             }
 
     print(f"Symbol '{symbol}' not found in the table")
@@ -56,7 +61,7 @@ async def handle_stock_symbol(update: Update, context: ContextTypes.DEFAULT_TYPE
     if data:
         response = (
             f"📈 Stock Data for <b>{data['Symbol']}</b>:\n\n"
-            f"Day High: {data['Day High']}"
+            f"LTP: {data['LTP']}"
         )
     else:
         response = f"Symbol '{symbol}' फेला परेन। कृपया सही सिम्बोल दिनुहोस्।"
