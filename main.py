@@ -14,7 +14,7 @@ TOKEN = os.getenv("TELEGRAM_API_KEY")
 
 # Fetch stock data function
 def fetch_stock_data_by_symbol(symbol):
-    url = "https://www.nepalstock.com/today-price"
+    url = "https://nepsealpha.com/live-market"
     try:
         response = requests.get(url, timeout=10, verify=False)
     except requests.exceptions.RequestException as e:
@@ -39,7 +39,7 @@ def fetch_stock_data_by_symbol(symbol):
 
         row_symbol = cols[1].text.strip()
         if row_symbol.upper() == symbol.upper():
-            ltp = cols[9].text.strip()
+            ltp = cols[6].text.strip()
             return {'Symbol': symbol, 'LTP': ltp}
 
     logging.info(f"Symbol '{symbol}' not found.")
